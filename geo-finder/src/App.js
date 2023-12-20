@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
-import { Bar } from 'react-chartjs-2';
+import { BarLoader } from 'react-spinners';
 import Chart from 'chart.js/auto';
 import './App.css';
 
@@ -134,16 +134,24 @@ function App() {
             onChange={handleFileChange}
           />
         </FileInputContainer>
-        {loading && <p>Loading...</p>}
+        {loading && (
+          <BarLoader
+            color="#00BFFF"
+            height={5}
+            width={150}
+            loading={loading}
+            style={{ margin: '20px auto', display: 'block' }}
+          />
+        )}
         {selectedFile && (
-          <div>
-            <p>Selected File: {selectedFile.name}</p>
-            <img
-              src={URL.createObjectURL(selectedFile)}
-              alt="Selected Preview"
-              style={{ maxWidth: '100%', maxHeight: '500px' }}
-            />
-          </div>
+        <div>
+          <p>Selected File: {selectedFile.name}</p>
+          <img
+            src={URL.createObjectURL(selectedFile)}
+            alt="Selected Preview"
+            style={{ display: 'block', maxWidth: '100%', maxHeight: '500px', margin: '10px auto' }}
+          />
+        </div>
         )}
         {classificationResult && (
           <div>
