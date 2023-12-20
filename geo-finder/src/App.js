@@ -29,6 +29,9 @@ function App() {
   const chartRef = useRef(null);
 
   const handleFileChange = async (event) => {
+    if (chartRef.current && chartRef.current.chart) {
+      chartRef.current.chart.destroy();
+    }
     const file = event.target.files[0];
     setSelectedFile(file);
 
@@ -71,7 +74,7 @@ function App() {
     if (chartRef.current && chartRef.current.chart) {
       chartRef.current.chart.destroy();
     }
-
+  
     if (!loading && classificationResult) {
       // Convert the classification result object to an array of objects
       const data = Object.entries(classificationResult)
@@ -144,7 +147,6 @@ function App() {
         )}
         {classificationResult && (
           <div>
-            <h2>Classification Result:</h2>
             {/* Use the chart canvas */}
             <canvas ref={chartRef}></canvas>
           </div>
