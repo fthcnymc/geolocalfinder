@@ -64,9 +64,8 @@ class ImageClassifier(Resource):
             confidences = {labels[i]: float(prediction[0][i].item()) for i in range(len(labels))}
 
             sorted_countries = sorted(confidences.items(), key=lambda x: x[1], reverse=True)
-            top10 = dict(itertools.islice(sorted_countries, 10))
-            print(top10)
-            return jsonify(top10)
+            top5 = dict(itertools.islice(sorted_countries, 5))
+            return jsonify(top5)
 
         except Exception as e:
             error_message = f"An error occurred: {str(e)}"

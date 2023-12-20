@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
+import { Bar } from 'react-chartjs-2';
+import Chart from 'chart.js/auto';
 import './App.css';
 
 const FileInputContainer = styled.label`
@@ -23,6 +25,7 @@ const FileInputContainer = styled.label`
 function App() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [classificationResult, setClassificationResult] = useState(null);
+  const chartRef = useRef(null);
 
   const handleFileChange = async (event) => {
     const file = event.target.files[0];
@@ -33,29 +36,62 @@ function App() {
       formData.append('file', file);
 
       try {
-      
         const uploadResponse = await fetch('http://localhost:5000/upload', {
           method: 'POST',
           body: formData,
         });
 
         const uploadData = await uploadResponse.json();
-        console.log(uploadData); 
+        console.log(uploadData);
 
-   
         const classifyResponse = await fetch('http://localhost:5000/classify', {
           method: 'POST',
           body: formData,
         });
 
         const classifyData = await classifyResponse.json();
-        setClassificationResult(classifyData); 
-        console.log(classifyData); 
+        setClassificationResult(classifyData);
+        console.log(classifyData);
+
+        // Clear the chart before rendering
+        if (chartRef.current) {
+          chartRef.current.destroy();
+        }
+
+        // Render the new chart
+        renderChart();
       } catch (error) {
         console.error('Error:', error);
       }
     }
   };
+
+  const renderChart = () => {
+    if (classificationResult) {
+      const ctx = chartRef.current.getContext('2d');
+      if (chartRef.current.chart) {
+        chartRef.current.chart.destroy(); // Destroy the existing chart instance
+      }
+      chartRef.current.chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: Object.keys(classificationResult),
+          datasets: [
+            {
+              label: 'Confidence Level',
+              data: Object.values(classificationResult),
+              backgroundColor: 'rgba(75, 192, 192, 0.7)',
+            },
+          ],
+        },
+      });
+    }
+  };
+  
+  // Call renderChart in the useEffect hook to render the chart initially and when classificationResult changes
+  useEffect(() => {
+    renderChart();
+  }, [classificationResult]);
 
   return (
     <div className="App">
@@ -85,13 +121,8 @@ function App() {
         {classificationResult && (
           <div>
             <h2>Classification Result:</h2>
-            <ul>
-              {Object.entries(classificationResult)
-                .sort(([, score1], [, score2]) => score2 - score1)
-                .map(([country, score]) => (
-                  <li key={country}>{`${country}: ${(score * 100).toFixed(2)}%`}</li>
-                ))}
-            </ul>
+            {/* Use the chart canvas */}
+            <canvas ref={chartRef}></canvas>
           </div>
         )}
       </main>
