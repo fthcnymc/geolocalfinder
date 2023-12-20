@@ -25,6 +25,7 @@ const FileInputContainer = styled.label`
 function App() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [classificationResult, setClassificationResult] = useState(null);
+  const [loading, setLoading] = useState(false);
   const chartRef = useRef(null);
 
   const handleFileChange = async (event) => {
@@ -36,6 +37,8 @@ function App() {
       formData.append('file', file);
 
       try {
+        setLoading(true); // Set loading to true when the file is being processed
+
         const uploadResponse = await fetch('http://localhost:5000/upload', {
           method: 'POST',
           body: formData,
@@ -53,21 +56,23 @@ function App() {
         setClassificationResult(classifyData);
         console.log(classifyData);
 
-        // Clear the chart before rendering
-        if (chartRef.current) {
-          chartRef.current.destroy();
-        }
-
         // Render the new chart
         renderChart();
       } catch (error) {
         console.error('Error:', error);
+      } finally {
+        setLoading(false); // Set loading back to false when the process is complete
       }
     }
   };
 
   const renderChart = () => {
-    if (classificationResult) {
+    // Clear the chart before rendering
+    if (chartRef.current && chartRef.current.chart) {
+      chartRef.current.chart.destroy();
+    }
+
+    if (!loading && classificationResult) {
       // Convert the classification result object to an array of objects
       const data = Object.entries(classificationResult)
         .map(([label, value]) => ({ label, value }))
@@ -77,9 +82,6 @@ function App() {
         .map(item => ({ ...item, value: item.value * 100 }));
   
       const ctx = chartRef.current.getContext('2d');
-      if (chartRef.current.chart) {
-        chartRef.current.chart.destroy(); // Destroy the existing chart instance
-      }
       chartRef.current.chart = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -129,6 +131,7 @@ function App() {
             onChange={handleFileChange}
           />
         </FileInputContainer>
+        {loading && <p>Loading...</p>}
         {selectedFile && (
           <div>
             <p>Selected File: {selectedFile.name}</p>
