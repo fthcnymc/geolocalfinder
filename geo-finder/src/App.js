@@ -68,6 +68,14 @@ function App() {
 
   const renderChart = () => {
     if (classificationResult) {
+      // Convert the classification result object to an array of objects
+      const data = Object.entries(classificationResult)
+        .map(([label, value]) => ({ label, value }))
+        // Sort the array based on the values in descending order
+        .sort((a, b) => b.value - a.value)
+        // Multiply the values by 100 to show percentages
+        .map(item => ({ ...item, value: item.value * 100 }));
+  
       const ctx = chartRef.current.getContext('2d');
       if (chartRef.current.chart) {
         chartRef.current.chart.destroy(); // Destroy the existing chart instance
@@ -75,14 +83,27 @@ function App() {
       chartRef.current.chart = new Chart(ctx, {
         type: 'bar',
         data: {
-          labels: Object.keys(classificationResult),
+          labels: data.map(item => item.label),
           datasets: [
             {
               label: 'Confidence Level',
-              data: Object.values(classificationResult),
+              data: data.map(item => item.value),
               backgroundColor: 'rgba(75, 192, 192, 0.7)',
             },
           ],
+        },
+        options: {
+          responsive: true,
+          aspectRatio: 10,
+          scales: {
+            x: {
+              type: 'category',
+            },
+            y: {
+              beginAtZero: true,
+              max: 100, // Set the maximum value for the y-axis to 100
+            },
+          },
         },
       });
     }
