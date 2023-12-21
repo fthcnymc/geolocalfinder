@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
+import { keyframes } from 'styled-components';
 import { BarLoader } from 'react-spinners';
 import Chart from 'chart.js/auto';
 import './App.css';
@@ -22,13 +23,49 @@ const FileInputContainer = styled.label`
   }
 `;
 
+const heartbeat = keyframes`
+  0% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.1);
+  }
+  50% {
+    transform: scale(1);
+  }
+  75% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+`;
+
+const CenteredMessage = styled.div`
+  position: fixed;
+  top: 40%;
+  left: 35%;
+  transform: translate(-50%, -50%);
+  background-color: #1f3661;
+  padding: 40px;
+  color: white;
+  border-radius: 1000px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  margin: 4 auto;
+  font-size: 18px;
+  animation: ${heartbeat} 5s infinite; 
+`;
 function App() {
+  const [showMessage, setShowMessage] = useState(true);
   const [selectedFile, setSelectedFile] = useState(null);
   const [classificationResult, setClassificationResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const chartRef = useRef(null);
 
   const handleFileChange = async (event) => {
+    setShowMessage(false);
     if (chartRef.current && chartRef.current.chart) {
       chartRef.current.chart.destroy();
     }
@@ -158,6 +195,12 @@ function App() {
             {/* Use the chart canvas */}
             <canvas ref={chartRef}></canvas>
           </div>
+        )}
+        {showMessage && (
+        <CenteredMessage>
+        Geofinder is designed to determine the country where the photo was taken. 
+        The uploaded photo is processed by the AI model, providing you with the top 5 possibilities regarding the country where the photo was taken
+        </CenteredMessage>
         )}
       </main>
     </div>
